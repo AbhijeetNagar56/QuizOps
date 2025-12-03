@@ -1,0 +1,22 @@
+{
+  "name": "quizapp",
+  "version": "1.0.0",
+  "description": "education app",
+  "homepage": "",
+  "bugs": {
+    "url": "mailto:support@quizapp.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "license": "ISC",
+  "author": "abhi",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Starting the website\" && cd backend && npm start",
+    "start": "cd backend && npm run dev",
+    "build": "npm i --prefix backend && npm i --prefix frontend && npm run build --prefix frontend"
+  }
+}
