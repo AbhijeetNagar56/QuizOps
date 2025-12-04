@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tab/Focus Detection Demo</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Roboto, "Segoe UI", sans-serif; padding: 24px; }
+    .card { max-width: 720px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; padding: 18px; }
+    h1 { margin-top: 0; }
+    button { padding: 10px 14px; font-size: 16px; margin-right: 8px; }
+    #log { margin-top: 12px; background:#f9f9f9; padding:10px; height:180px; overflow:auto; border-radius:6px; border:1px solid #eee; font-family: monospace; font-size:13px; }
+    .warning { color: #8b0000; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Proctoring Demo — Tab / Focus Detection</h1>
+    <p>
+      Click <strong>Start Test</strong> to enter fullscreen and begin. The page will detect visibility changes (tab switch, minimize),
+      window blur/focus, and fullscreen exit. After <strong>3 violations</strong> it will auto-submit.
+    </p>
+
+    <div>
+      <button id="startBtn">Start Test (Enter Fullscreen)</button>
+      <button id="endBtn" disabled>End Test</button>
+      <span style="margin-left:12px">Violations: <span id="violCount">0</span></span>
+    </div>
+
+    <div id="status" style="margin-top:12px">Status: <strong id="statTxt">idle</strong></div>
+
+    <div id="log" aria-live="polite"></div>
+  </div>
+
+<script>
+(() => {
+  const startBtn = document.getElementById('startBtn');
+  const endBtn = document.getElementById('endBtn');
+  const violCountEl = document.getElementById('violCount');
+  const logEl = document.getElementById('log');
+  const statTxt = document.getElementById('statTxt');
+
+  let violationCount = 0;
+  let running = false;
+  const MAX_VIOLATIONS = 3;
+  const sessionId = 'sess-' + Math.random().toString(36).slice(2,9);
+
+  function appendLog(text) {
+    const ts = new Date().toLocaleTimeString();
+    logEl.innerText = `[${ts}] ${text}\n` + logEl.innerText;
+  }
+
+  function sendServerLog(type, details={}) {
+    // best-effort; we don't block if server is not available.
+    navigator.sendBeacon && navigator.sendBeacon('/log', JSON.stringify({
+      sessionId, type, details, ts: Date.now()
+    })) || fetch('/log', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ sessionId, type, details, ts: Date.now() })
+    }).catch(() => {});
+  }
+
+  function handleViolation(reason) {
+    violationCount++;
+    violCountEl.innerText = violationCount;
+    appendLog('Violation: ' + reason + ` (count=${violationCount})`);
+    sendServerLog('violation', {reason, count: violationCount});
+
+    // show a warning
+    statTxt.innerHTML = `<span class="warning">Warning: ${reason} (Violation ${violationCount})</span>`;
+
+    if (violationCount >= MAX_VIOLATIONS) {
+      appendLog('Max violations reached — auto-submitting test.');
+      sendServerLog('autoSubmit', {reason});
+      endTest(true);
+    }
+
+    // restore after short delay
+    setTimeout(() => {
+      if (running) statTxt.innerText = 'running';
+    }, 2500);
+  }
+
+  function startTest() {
+    if (running) return;
+    running = true;
+    appendLog('Test started, session=' + sessionId);
+    statTxt.innerText = 'running';
+    startBtn.disabled = true;
+    endBtn.disabled = false;
+
+    // try fullscreen
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen && el.webkitRequestFullscreen();
+
+    sendServerLog('start', {});
+
+    // add event listeners
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('blur', onBlur);
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    window.addEventListener('beforeunload', onBeforeUnload);
+  }
+
+  function endTest(auto=false) {
+    if (!running) return;
+    running = false;
+    appendLog('Test ended' + (auto ? ' (auto)' : ''));
+    statTxt.innerText = 'ended';
+    startBtn.disabled = false;
+    endBtn.disabled = true;
+    sendServerLog('end', {auto, violations: violationCount});
+
+    // remove listeners
+    document.removeEventListener('visibilitychange', onVisibilityChange);
+    window.removeEventListener('blur', onBlur);
+    window.removeEventListener('focus', onFocus);
+    document.removeEventListener('fullscreenchange', onFullscreenChange);
+    window.removeEventListener('beforeunload', onBeforeUnload);
+
+    // exit fullscreen if possible
+    if (document.fullscreenElement) {
+      document.exitFullscreen && document.exitFullscreen().catch(()=>{});
+    }
+  }
+
+  function onVisibilityChange() {
+    if (!running) return;
+    if (document.hidden) {
+      handleViolation('document hidden (tab switch / minimize)');
+    } else {
+      appendLog('Document visible again');
+      sendServerLog('visible', {});
+    }
+  }
+
+  function onBlur() {
+    if (!running) return;
+    // blur happens when the window loses focus (could be switching apps)
+    handleViolation('window blur (lost focus)');
+  }
+
+  function onFocus() {
+    if (!running) return;
+    appendLog('Window focused');
+    sendServerLog('focus', {});
+  }
+
+  function onFullscreenChange() {
+    if (!running) return;
+    if (!document.fullscreenElement) {
+      // user exited fullscreen
+      handleViolation('exited fullscreen');
+    } else {
+      appendLog('Entered fullscreen');
+      sendServerLog('fullscreen-enter', {});
+    }
+  }
+
+  function onBeforeUnload(e) {
+    // optional: send final log
+    sendServerLog('beforeunload', {});
+    // standard behavior: no custom message for modern browsers.
+  }
+
+  startBtn.addEventListener('click', startTest);
+  endBtn.addEventListener('click', () => endTest(false));
+
+  // for demo: show initial instructions in the log
+  appendLog('Ready. Click "Start Test" to begin. This demo will POST logs to /log on the server.');
+})();
+</script>
+</body>
+</html>

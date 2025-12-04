@@ -1,1 +1,1 @@
-MediRaksha
+Quiz App
