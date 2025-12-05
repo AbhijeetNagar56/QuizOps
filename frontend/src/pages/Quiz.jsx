@@ -26,6 +26,10 @@ const quizzes = [
 ];
 
 export default function QuizzesPage() {
+  // ✅ Partitioning logic
+  const upcomingQuizzes = quizzes.filter(q => q.status === "scheduled");
+  const takenQuizzes = quizzes.filter(q => q.status === "taken");
+
   return (
     <div className="p-6 relative">
 
@@ -33,49 +37,90 @@ export default function QuizzesPage() {
         ← Back
       </Link>
 
-      <h1 className="text-3xl font-bold text-center mb-6">
-        Available Quizzes
+      <h1 className="text-3xl font-bold text-center mb-10">
+        Quizzes Dashboard
       </h1>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mt-10">
-        {quizzes.map((quiz) => (
-          <div key={quiz.id} className="card bg-base-100 shadow-md p-4">
-            
-            <h2 className="text-xl font-semibold">{quiz.subject}</h2>
+      {/* ✅ UPCOMING QUIZZES SECTION */}
+      <div className="mb-12">
+        <h2 className="text-2xl font-semibold mb-4 text-green-600">
+          Upcoming Quizzes
+        </h2>
 
-            <p className="mt-2">
-              <span className="font-semibold">Date:</span> {quiz.date}
-            </p>
+        {upcomingQuizzes.length === 0 ? (
+          <p className="text-gray-500">No upcoming quizzes.</p>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {upcomingQuizzes.map((quiz) => (
+              <div key={quiz.id} className="card bg-base-100 shadow-md p-4">
+                <h2 className="text-xl font-semibold">{quiz.subject}</h2>
 
-            <p>
-              <span className="font-semibold">Time:</span> {quiz.time}
-            </p>
+                <p className="mt-2">
+                  <span className="font-semibold">Date:</span> {quiz.date}
+                </p>
 
-            <p className="mt-2">
-              <span className="font-semibold">Status:</span>{" "}
-              <span
-                className={
-                  quiz.status === "taken"
-                    ? "text-red-500 font-bold"
-                    : "text-green-600 font-bold"
-                }
-              >
-                {quiz.status === "taken" ? "Taken" : "Scheduled"}
-              </span>
-            </p>
+                <p>
+                  <span className="font-semibold">Time:</span> {quiz.time}
+                </p>
 
-            <Link
-              to="/quiz-details"
-              state={quiz}    // ⬅ Passing quiz details
-              className="btn btn-primary mt-4"
-              disabled={quiz.status !== "scheduled"}
-            >
-              {quiz.status === "taken" ? "Completed" : "Take Quiz"}
-            </Link>
+                <p className="mt-2">
+                  <span className="font-semibold">Status:</span>{" "}
+                  <span className="text-green-600 font-bold">
+                    Scheduled
+                  </span>
+                </p>
 
+                <Link
+                  to="/quiz-details"
+                  state={quiz}
+                  className="btn btn-primary mt-4"
+                >
+                  Take Quiz
+                </Link>
+              </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
+
+      {/* ✅ TAKEN QUIZZES SECTION */}
+      <div>
+        <h2 className="text-2xl font-semibold mb-4 text-red-500">
+          Completed Quizzes
+        </h2>
+
+        {takenQuizzes.length === 0 ? (
+          <p className="text-gray-500">No completed quizzes yet.</p>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {takenQuizzes.map((quiz) => (
+              <div key={quiz.id} className="card bg-base-100 shadow-md p-4 opacity-70">
+                <h2 className="text-xl font-semibold">{quiz.subject}</h2>
+
+                <p className="mt-2">
+                  <span className="font-semibold">Date:</span> {quiz.date}
+                </p>
+
+                <p>
+                  <span className="font-semibold">Time:</span> {quiz.time}
+                </p>
+
+                <p className="mt-2">
+                  <span className="font-semibold">Status:</span>{" "}
+                  <span className="text-red-500 font-bold">
+                    Taken
+                  </span>
+                </p>
+
+                <button className="btn btn-disabled mt-4">
+                  Completed
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }

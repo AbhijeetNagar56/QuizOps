@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 if (process.env.NODE_ENV !== 'production') {
-  axios.defaults.baseURL = 'http://localhost:5000/api';
+  axios.defaults.baseURL = 'http://localhost:5500/api';
 } else {
   axios.defaults.baseURL = '/api';
 }

@@ -55,14 +55,12 @@ export default function Dashboard() {
             <p className="mt-2 text-gray-600">Attempt pending or scheduled quizzes.</p>
           </Link>
 
-          <Link to="/upcoming" className="card bg-base-200 shadow-md p-6 hover:shadow-xl transition cursor-pointer">
-            <h3 className="text-xl font-semibold">📅 Upcoming Exams</h3>
-            <p className="mt-2 text-gray-600">View your upcoming quiz schedule.</p>
+          <Link to="/create" className="card bg-base-200 shadow-md p-6 hover:shadow-xl transition cursor-pointer">
+            <h3 className="text-xl font-semibold">➕ Create New Quiz</h3>
+            <p className="mt-2 text-gray-600">Design and add quizzes for practice.</p>
           </Link>
-
         </div>
       </div>
-
       <Footer />
     </div>
   );

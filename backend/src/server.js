@@ -21,7 +21,7 @@ app.use(express.json());
 
 // API Routes
 app.get("/api", (_, res) => {
-  res.status(200).json({ msg: "Welcome to MediRaksha" });
+  res.status(200).json({ msg: "Home page" });
 });
 
 // other routes

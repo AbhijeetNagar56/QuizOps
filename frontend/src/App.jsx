@@ -6,7 +6,6 @@ import ResultPage from './pages/Result';
 import QuizDetailsPage from './components/QuizDetail';
 import CreateQuizPage from './pages/Create';
 import QuizTakingPage from './pages/QuizTaking';
-import UpcomingQuizzes from './pages/Upcoming';
 
 export default function App() {
   return (
@@ -19,7 +18,6 @@ export default function App() {
         <Route path="/quiz-details" element={<QuizDetailsPage />} />
         <Route path="/create" element={<CreateQuizPage />} />
         <Route path="/take-quiz" element={<QuizTakingPage />} />
-        <Route path="/upcoming" element={<UpcomingQuizzes />} />
       </Routes>
     </div>
   );

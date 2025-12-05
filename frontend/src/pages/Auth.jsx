@@ -5,31 +5,16 @@ import { ArrowLeft } from "lucide-react"; //
 
 const Auth = () => {
   const [su, setsu] = useState(true);
-  const [email, setEmail] = useState('');
+  const [rollNo, setRollNo] = useState('');
+  const [facultyId, setFacultyId] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-
-  // Handle Signup
-  const handleSignup = async () => {
-    try {
-      const response = await axiosInstance.post('/auth', {
-        name,
-        email,
-        password
-      });
-      console.log('Signup successful:', response.data);
-      handleLogin(); // Auto-login after signup
-    } catch (error) {
-      console.error('Signup error:', error.response?.data || error.message);
-    }
-  };
   
-  // Handle Login
-  const handleLogin = async () => {
+
+  // Handle student Login
+  const handleStudentLogin = async () => {
     try {
-      const response = await axiosInstance.post('/auth/login', {
-        name,
-        email,
+      const response = await axiosInstance.post('/auth/student', {
+        rollNo,
         password
       });
 
@@ -47,21 +32,45 @@ const Auth = () => {
 
       const data = res.data;
       console.log('Login successful:', response.data);
+      window.location.href = "/"; // Redirect to home
+      
+    } catch (error) {
+      console.error('Login error:', error.response?.data || error.message);
+    }
+  };
+  
+  // Handle faculty Login
+  const handleFacultyLogin = async () => {
+    try {
+      const response = await axiosInstance.post('/auth/faculty', {
+        facultyId,
+        password
+      });
 
-      // 🔹 Redirect based on user details
-      if (!(data.gender) || !(data.age)) {
-        window.location.href = '/details';
-      } else {
-        window.location.href = '/';
-      }
+      const token = response.data.token;
+
+      // Save token in localStorage
+      localStorage.setItem('token', token);
+
+      // Use Axios for dashboard request
+      const res = await axiosInstance.get("/dashBoard", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = res.data;
+      console.log('Login successful:', response.data);
+      window.location.href = "/"; // Redirect to home
+
     } catch (error) {
       console.error('Login error:', error.response?.data || error.message);
     }
   };
 
-  // 🔹 UI Rendering
+  //  UI Rendering
   if (su) {
-    // Signup Form
+    // Student Login Form
     return (
       <div className="min-h-screen flex items-center justify-center bg-base-200">
         <div className="card w-full max-w-sm shadow-xl bg-base-100">
@@ -80,8 +89,8 @@ const Auth = () => {
               </div>
               <input
                 type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={rollNo}
+                onChange={(e) => setRollNo(e.target.value)}
                 placeholder="Roll No"
                 className="input input-bordered w-full"
               />
@@ -102,7 +111,7 @@ const Auth = () => {
               />
             </label>
 
-            <button onClick={handleSignup} className="btn btn-primary w-full">Log In</button>
+            <button onClick={handleStudentLogin} className="btn btn-primary w-full">Log In</button>
             <p className="justify-self-start cursor-pointer" onClick={() => setsu(false)}>
               Are you faculty?
             </p>
@@ -111,7 +120,7 @@ const Auth = () => {
       </div>
     );
   } else {
-    // Login Form
+    // Faculty Login Form
     return (
       <div className="min-h-screen flex items-center justify-center bg-base-200">
         <div className="card w-full max-w-sm shadow-xl bg-base-100">
@@ -120,7 +129,7 @@ const Auth = () => {
               <Link to="/" className="text-gray-500 hover:text-gray-700">
                 <ArrowLeft size={24} />
               </Link>
-              <h2 className="text-2xl font-bold text-center flex-grow">Admin Account</h2>
+              <h2 className="text-2xl font-bold text-center flex-grow">Faculty Account</h2>
               <div className="w-6"></div> {/* Spacer to balance the title */}
             </div>
 
@@ -129,9 +138,9 @@ const Auth = () => {
                 <span className="label-text">Faculty ID</span>
               </div>
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                value={facultyId}
+                onChange={(e) => setFacultyId(e.target.value)}
                 placeholder="Faculty ID"
                 className="input input-bordered w-full"
               />
@@ -150,7 +159,7 @@ const Auth = () => {
               />
             </label>
 
-            <button onClick={handleLogin} className="btn btn-accent w-full">Log In</button>
+            <button onClick={handleFacultyLogin} className="btn btn-accent w-full">Log In</button>
             <p className="justify-self-start cursor-pointer" onClick={() => setsu(true)}>
               Are you a student?
             </p>

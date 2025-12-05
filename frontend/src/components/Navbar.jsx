@@ -35,9 +35,6 @@ export default function Navbar() {
               <Link to="/results">Results</Link>
             </li>
             <li>
-              <Link to="/upcoming">Upcoming</Link>
-            </li>
-            <li>
               <Link to="/create">Create Quiz</Link>
             </li>
           </ul>
@@ -55,9 +52,6 @@ export default function Navbar() {
           </li>
           <li>
             <Link to="/results">Results</Link>
-          </li>
-          <li>
-            <Link to="/upcoming">Upcoming</Link>
           </li>
           <li>
             <Link to="/create">Create Quiz</Link>
