@@ -1,13 +1,16 @@
 import jwt from "jsonwebtoken";
+import student from "../models/Student.js";
 const JWT_SECRET = process.env.JWT_SECRET;
 
-const authMiddleware = (req, res, next) => {
+
+const authMiddleware = async (req, res, next) => {
   const token = req.header('Authorization')?.split(" ")[1];
   if (!token) return res.status(401).json({ msg: 'No token, authorization denied' });
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded.id;
+
+    req.user = await student.findById(decoded.id);
     next();
   } catch (err) {
     console.log('error is ', err);

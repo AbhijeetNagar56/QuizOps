@@ -1,19 +1,20 @@
 import express from 'express';
-import jwt from 'jsonwebtoken';
-import User from '../models/Student.js';
+import { createQuiz, deleteQuiz, editQuiz, getSubmissions } from '../controllers/facultyController.js';
+import { getQuiz, submitQuiz, getResults, getAllQuizzes } from '../controllers/studentController.js';
+
 
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET;
+
 
 router.get('/', (req, res) => {
-  res.send({msg:"successfully accessed dashboard"});
+  res.send({msg:`successfully accessed dashboard ${req.user}`});
 })
 
 // for faculty
 router.post('/createQuiz', createQuiz);
-router.post('/deleteQuiz', deleteQuiz);
-router.post('/editQuiz', editQuiz);
+router.post('/deleteQuiz/:quizId', deleteQuiz);
+router.post('/editQuiz/:quizId', editQuiz);
 router.post('/getSubmissions', getSubmissions);
 
 
